@@ -3,6 +3,8 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
+import java.awt.event.*;
+
 
 import AccidentHistory.AccidentHistory;
 import Client.Client;
@@ -23,6 +25,9 @@ public class App {
     private JComboBox<PaymentSchedule> scheduleBox = new JComboBox<>(PaymentSchedule.values());
     private ContractRepository repository = new ContractRepository("carInsurance/data/contracts");
 
+import Vehicle.Vehicle;
+
+public class App {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new App().createAndShowGUI());
     }
@@ -30,7 +35,6 @@ public class App {
     private void createAndShowGUI() {
         JFrame frame = new JFrame("E-Asigurari masini");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
         JPanel panel = new JPanel(new GridLayout(0, 2));
         panel.add(new JLabel("Client name:"));
         panel.add(clientNameField);
@@ -54,6 +58,17 @@ public class App {
 
         frame.getContentPane().add(panel, BorderLayout.CENTER);
         frame.getContentPane().add(createButton, BorderLayout.SOUTH);
+        JButton button = new JButton("Create Contract");
+
+        // anonymous inner class for event handling
+        button.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                performSampleContract();
+                JOptionPane.showMessageDialog(frame, "Contract created (demo)");
+            }
+        });
+
+        frame.getContentPane().add(button);
         frame.pack();
         frame.setVisible(true);
     }
@@ -77,5 +92,12 @@ public class App {
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(parent, "Error saving contract: " + ex.getMessage());
         }
+    private void performSampleContract() {
+        Employee emp = new Employee("1", "John");
+        AccidentHistory history = new AccidentHistory(0);
+        Client client = new Client("100", "Client A", history);
+        Engine engine = new Engine(EngineType.PETROL, "Euro6");
+        Vehicle vehicle = new Vehicle("VIN123", "Make", "Model", 2020, 10000, engine);
+        emp.createContract(client, vehicle, 12000, PaymentSchedule.ANNUAL);
     }
 }
