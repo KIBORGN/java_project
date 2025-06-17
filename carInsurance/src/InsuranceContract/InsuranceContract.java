@@ -1,8 +1,10 @@
 package InsuranceContract;
 
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -62,6 +64,24 @@ public class InsuranceContract implements Serializable {
     public void saveToFile(String path) throws IOException {
         try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(path))) {
             out.writeObject(this);
+        }
+    }
+
+    public void saveToTextFile(String path) throws IOException {
+        try (PrintWriter out = new PrintWriter(new FileWriter(path))) {
+            out.println("Contract Number: " + contractNumber);
+            out.println("Date Issued: " + dateIssued);
+            out.println("Payment Schedule: " + paymentSchedule);
+            out.println("Client: " + client.getName());
+            out.println("Vehicle: " + vehicle.toString());
+            out.println("Insured Sum: " + insuredSum);
+            out.println("Discount: " + discount);
+            for (Coverage c : coverages) {
+                out.println("Coverage: " + c.getType() + " factor=" + c.getRiskFactor());
+            }
+            for (Payment p : payments) {
+                out.println("Payment: " + p.getDate() + " amount=" + p.getAmount());
+            }
         }
     }
 }

@@ -16,8 +16,10 @@ public class ContractRepository {
     }
 
     public File saveContract(InsuranceContract contract) throws IOException {
-        File file = new File(baseDir, contract.getContractNumber() + ".ser");
-        contract.saveToFile(file.getAbsolutePath());
-        return file;
+        File serFile = new File(baseDir, contract.getContractNumber() + ".ser");
+        contract.saveToFile(serFile.getAbsolutePath());
+        File txtFile = new File(baseDir, contract.getContractNumber() + ".txt");
+        contract.saveToTextFile(txtFile.getAbsolutePath());
+        return serFile;
     }
 }

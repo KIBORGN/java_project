@@ -78,6 +78,9 @@ public class App {
             );
 
             File path = repository.saveContract(contract);
+            File txtPath = new File(path.getParentFile(), contract.getContractNumber() + ".txt");
+            JOptionPane.showMessageDialog(parent,
+                    "Contract saved to " + path.getAbsolutePath() + " and " + txtPath.getAbsolutePath());
             JOptionPane.showMessageDialog(parent, "Contract saved to " + path.getAbsolutePath());
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(parent, "Error saving contract: " + ex.getMessage());
