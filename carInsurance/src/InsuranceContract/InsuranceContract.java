@@ -50,6 +50,8 @@ public class InsuranceContract implements Serializable {
 
     public double calculatePremium() {
         double base = vehicle.calculateDepreciation() + vehicle.optionsCost();
+        base *= vehicle.getRiskIndex();
+        base *= vehicle.getPollutionIndex();
         base *= client.getHistory().getRiskFactor();
         for (Coverage c : coverages) {
             base *= c.getRiskFactor();

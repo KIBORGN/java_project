@@ -10,18 +10,18 @@ import Employee.Employee;
 import Engine.Engine;
 import Enums.EngineType;
 import Enums.PaymentSchedule;
+import Enums.VehicleType;
 import InsuranceContract.InsuranceContract;
 import Repository.ContractRepository;
 import Vehicle.Vehicle;
 
 public class App {
     private JTextField clientNameField = new JTextField(15);
-    private JTextField makeField = new JTextField(10);
-    private JTextField modelField = new JTextField(10);
-    private JTextField yearField = new JTextField(4);
-    private JComboBox<EngineType> engineBox = new JComboBox<>(EngineType.values());
+    private JComboBox<Vehicle> modelBox = new JComboBox<>();
+    private JTextArea infoArea = new JTextArea(5, 20);
     private JComboBox<PaymentSchedule> scheduleBox = new JComboBox<>(PaymentSchedule.values());
     private ContractRepository repository = new ContractRepository("carInsurance/data/contracts");
+    private java.util.List<Vehicle> vehicles = new java.util.ArrayList<>();
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new App().createAndShowGUI());
@@ -30,20 +30,21 @@ public class App {
     private void createAndShowGUI() {
         JFrame frame = new JFrame("E-Asigurari masini");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        loadSampleVehicles();
+
         JPanel panel = new JPanel(new GridLayout(0, 2));
 
         panel.add(new JLabel("Client name:"));
         panel.add(clientNameField);
-        panel.add(new JLabel("Make:"));
-        panel.add(makeField);
-        panel.add(new JLabel("Model:"));
-        panel.add(modelField);
-        panel.add(new JLabel("Year:"));
-        panel.add(yearField);
-        panel.add(new JLabel("Engine:"));
-        panel.add(engineBox);
+        panel.add(new JLabel("Select model:"));
+        panel.add(modelBox);
+        panel.add(new JLabel("Vehicle info:"));
+        infoArea.setEditable(false);
+        panel.add(new JScrollPane(infoArea));
         panel.add(new JLabel("Payment schedule:"));
         panel.add(scheduleBox);
+
+        modelBox.addActionListener(e -> updateVehicleInfo());
 
         JButton createButton = new JButton("Create Contract");
         createButton.addActionListener(e -> handleCreateContract(frame));
@@ -58,19 +59,17 @@ public class App {
 
     private void handleCreateContract(JFrame parent) {
         try {
+            Vehicle selected = (Vehicle) modelBox.getSelectedItem();
+            if (selected == null) {
+                JOptionPane.showMessageDialog(parent, "No vehicle selected");
+                return;
+            }
+
             Employee emp = new Employee("1", "Agent");
             AccidentHistory history = new AccidentHistory(0);
             Client client = new Client("100", clientNameField.getText(), history);
-            Engine engine = new Engine((EngineType) engineBox.getSelectedItem(), "Euro6");
-            int year = Integer.parseInt(yearField.getText());
-            Vehicle vehicle = new Vehicle(
-                    "VIN" + System.currentTimeMillis(),
-                    makeField.getText(),
-                    modelField.getText(),
-                    year,
-                    10000,
-                    engine
-            );
+            // Use the selected vehicle directly
+            Vehicle vehicle = selected;
             InsuranceContract contract = emp.createContract(
                     client,
                     vehicle,
@@ -80,11 +79,39 @@ public class App {
 
             File path = repository.saveContract(contract);
             JOptionPane.showMessageDialog(parent, "Contract saved to " + path.getAbsolutePath());
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(parent, "Invalid year");
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(parent, "Error saving contract: " + ex.getMessage());
         }
+    }
+
+    private void loadSampleVehicles() {
+        int currentYear = java.time.Year.now().getValue();
+        vehicles.add(new Vehicle("VIN1", "Ford", "Focus", currentYear,
+                15000, new Engine(EngineType.PETROL, "Euro6"), 120, VehicleType.CAR));
+        vehicles.add(new Vehicle("VIN2", "Yamaha", "MT-07", currentYear,
+                9000, new Engine(EngineType.PETROL, "Euro5"), 75, VehicleType.MOTORCYCLE));
+        vehicles.add(new Vehicle("VIN3", "BMW", "X5", currentYear,
+                45000, new Engine(EngineType.DIESEL, "Euro6"), 250, VehicleType.CAR));
+        vehicles.add(new Vehicle("VIN4", "Classic", "Carriage", currentYear,
+                2000, new Engine(EngineType.PETROL, "Euro4"), 50, VehicleType.CARRIAGE));
+
+        for (Vehicle v : vehicles) {
+            modelBox.addItem(v);
+        }
+    }
+
+    private void updateVehicleInfo() {
+        Vehicle v = (Vehicle) modelBox.getSelectedItem();
+        if (v == null) {
+            infoArea.setText("");
+            return;
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append("Make: ").append(v.toString()).append('\n');
+        sb.append("HP: ").append(v.getHorsepower()).append('\n');
+        sb.append("Risk index: ").append(String.format("%.2f", v.getRiskIndex())).append('\n');
+        sb.append("Pollution index: ").append(String.format("%.2f", v.getPollutionIndex()));
+        infoArea.setText(sb.toString());
     }
 
     // Sample method for demo purposes
@@ -93,7 +120,8 @@ public class App {
         AccidentHistory history = new AccidentHistory(0);
         Client client = new Client("100", "Client A", history);
         Engine engine = new Engine(EngineType.PETROL, "Euro6");
-        Vehicle vehicle = new Vehicle("VIN123", "Make", "Model", 2020, 10000, engine);
+        Vehicle vehicle = new Vehicle("VIN123", "Make", "Model", 2020, 10000,
+                engine, 150, VehicleType.CAR);
         InsuranceContract contract = emp.createContract(client, vehicle, 12000, PaymentSchedule.ANNUAL);
         try {
             File path = repository.saveContract(contract);

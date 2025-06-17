@@ -22,7 +22,7 @@ public class Engine implements Serializable {
         return euroClass;
     }
 
-    public double getPollutionIndex() {
+    public double getPollutionIndex(int vehicleAge) {
         double base = 1.0;
         switch (type) {
             case DIESEL:
@@ -35,6 +35,23 @@ public class Engine implements Serializable {
                 base = 0.2;
                 break;
         }
-        return base;
+
+        double euroFactor = 1.0;
+        String cls = euroClass.toLowerCase();
+        if (cls.startsWith("euro")) {
+            try {
+                int num = Integer.parseInt(cls.substring(4));
+                euroFactor = 1.3 - Math.min(num, 6) * 0.1;
+            } catch (NumberFormatException ignore) {
+                euroFactor = 1.0;
+            }
+        }
+
+        double ageFactor = 1 + Math.min(vehicleAge, 20) * 0.02;
+        return base * euroFactor * ageFactor;
+    }
+
+    public double getPollutionIndex() {
+        return getPollutionIndex(0);
     }
 }
