@@ -42,6 +42,18 @@ public class InsuranceContract implements Serializable {
         return contractNumber;
     }
 
+    public Client getClient() {
+        return client;
+    }
+
+    public Vehicle getVehicle() {
+        return vehicle;
+    }
+
+    public void setVehicle(Vehicle vehicle) {
+        this.vehicle = vehicle;
+    }
+
     public void addCoverage(Coverage c) {
         coverages.add(c);
     }
@@ -83,5 +95,10 @@ public class InsuranceContract implements Serializable {
                 out.println("Payment: " + p.getDate() + " amount=" + p.getAmount());
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        return contractNumber + " - " + client.getName() + " (" + vehicle + ")";
     }
 }

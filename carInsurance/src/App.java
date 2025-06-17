@@ -1,90 +1,227 @@
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.*;
-import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 import AccidentHistory.AccidentHistory;
 import Client.Client;
 import Employee.Employee;
 import Engine.Engine;
+import Enums.CoverageType;
 import Enums.EngineType;
 import Enums.PaymentSchedule;
 import Enums.VehicleType;
 import InsuranceContract.InsuranceContract;
+import Coverage.Coverage;
 import Repository.ContractRepository;
+import Repository.ClientRepository;
 import Vehicle.Vehicle;
 
 public class App {
-    private JTextField clientNameField = new JTextField(15);
-    private JComboBox<Vehicle> modelBox = new JComboBox<>();
-    private JTextArea infoArea = new JTextArea(5, 20);
-    private JComboBox<PaymentSchedule> scheduleBox = new JComboBox<>(PaymentSchedule.values());
-    private ContractRepository repository = new ContractRepository("carInsurance/data/contracts");
-    private java.util.List<Vehicle> vehicles = new java.util.ArrayList<>();
+    private ContractRepository contractRepository = new ContractRepository("carInsurance/data/contracts");
+    private ClientRepository clientRepository = new ClientRepository("carInsurance/data/clients.ser");
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new App().createAndShowGUI());
+    private List<Client> clients = new ArrayList<>();
+    private List<Vehicle> vehicles = new ArrayList<>();
+
+    public App() {
+        clients.addAll(clientRepository.loadClients());
+        loadSampleVehicles();
     }
 
-    private void createAndShowGUI() {
-        JFrame frame = new JFrame("E-Asigurari masini");
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new App().showMainMenu());
+    }
+
+    private void showMainMenu() {
+        JFrame frame = new JFrame("Asigurare Masini");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        loadSampleVehicles();
 
-        JPanel panel = new JPanel(new GridLayout(0, 2));
+        // Title label
+        JLabel titleLabel = new JLabel("Asigurare Masini", SwingConstants.CENTER);
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        titleLabel.setBorder(new EmptyBorder(10, 0, 20, 0));
 
-        panel.add(new JLabel("Client name:"));
-        panel.add(clientNameField);
-        panel.add(new JLabel("Select model:"));
-        panel.add(modelBox);
-        panel.add(new JLabel("Vehicle info:"));
-        infoArea.setEditable(false);
-        panel.add(new JScrollPane(infoArea));
-        panel.add(new JLabel("Payment schedule:"));
-        panel.add(scheduleBox);
+        // Buttons with extra spacing
+        JButton newContract = new JButton("Новый контракт");
+        JButton clientsBtn = new JButton("Клиенты");
+        JButton paymentBtn = new JButton("Оплата");
+        JButton contractsBtn = new JButton("Контракты");
 
-        modelBox.addActionListener(e -> updateVehicleInfo());
+        newContract.addActionListener(e -> openNewContractWindow());
+        clientsBtn.addActionListener(e -> openClientsWindow());
+        paymentBtn.addActionListener(e -> openPaymentWindow());
+        contractsBtn.addActionListener(e -> openContractsWindow());
 
-        JButton createButton = new JButton("Create Contract");
-        createButton.addActionListener(e -> handleCreateContract(frame));
+        JPanel panel = new JPanel(new GridLayout(4, 1, 10, 10));
+        panel.setBorder(new EmptyBorder(20, 40, 20, 40));
+        panel.add(newContract);
+        panel.add(clientsBtn);
+        panel.add(paymentBtn);
+        panel.add(contractsBtn);
 
+        frame.getContentPane().setLayout(new BorderLayout());
+        frame.getContentPane().add(titleLabel, BorderLayout.NORTH);
         frame.getContentPane().add(panel, BorderLayout.CENTER);
-        frame.getContentPane().add(createButton, BorderLayout.SOUTH);
-
         frame.pack();
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }
 
-    private void handleCreateContract(JFrame parent) {
+    private void openNewContractWindow() {
+        JFrame frame = new JFrame("Новый контракт");
+        JPanel panel = new JPanel(new GridLayout(0, 2));
+
+        JComboBox<Client> clientBox = new JComboBox<>(clients.toArray(new Client[0]));
+        JComboBox<Vehicle> modelBox = new JComboBox<>(vehicles.toArray(new Vehicle[0]));
+        JTextArea infoArea = new JTextArea(5, 20);
+        infoArea.setEditable(false);
+        JComboBox<PaymentSchedule> scheduleBox = new JComboBox<>(PaymentSchedule.values());
+        JComboBox<String> coverageBox = new JComboBox<>(new String[]{"Все", "Авария", "Землетрясение", "Пожар"});
+
+        modelBox.addActionListener(e -> updateVehicleInfo(modelBox, infoArea));
+
+        panel.add(new JLabel("Клиент:"));
+        panel.add(clientBox);
+        panel.add(new JLabel("Модель:"));
+        panel.add(modelBox);
+        panel.add(new JLabel("Инфо:"));
+        panel.add(new JScrollPane(infoArea));
+        panel.add(new JLabel("График оплаты:"));
+        panel.add(scheduleBox);
+        panel.add(new JLabel("Покрытие:"));
+        panel.add(coverageBox);
+
+        JButton createBtn = new JButton("Создать");
+        createBtn.addActionListener(e -> handleCreateContract(frame, clientBox, modelBox, scheduleBox, coverageBox));
+
+        frame.getContentPane().add(panel, BorderLayout.CENTER);
+        frame.getContentPane().add(createBtn, BorderLayout.SOUTH);
+        frame.pack();
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
+    }
+
+    private void handleCreateContract(JFrame parent, JComboBox<Client> clientBox, JComboBox<Vehicle> modelBox,
+                                       JComboBox<PaymentSchedule> scheduleBox, JComboBox<String> coverageBox) {
         try {
-            Vehicle selected = (Vehicle) modelBox.getSelectedItem();
-            if (selected == null) {
-                JOptionPane.showMessageDialog(parent, "No vehicle selected");
+            Vehicle vehicle = (Vehicle) modelBox.getSelectedItem();
+            Client client = (Client) clientBox.getSelectedItem();
+            if (vehicle == null || client == null) {
+                JOptionPane.showMessageDialog(parent, "Данные не выбраны");
                 return;
             }
-
             Employee emp = new Employee("1", "Agent");
-            AccidentHistory history = new AccidentHistory(0);
-            Client client = new Client("100", clientNameField.getText(), history);
-            // Use the selected vehicle directly
-            Vehicle vehicle = selected;
-            InsuranceContract contract = emp.createContract(
-                    client,
-                    vehicle,
-                    vehicle.getBasePrice(),
-                    (PaymentSchedule) scheduleBox.getSelectedItem()
-            );
+            InsuranceContract contract = emp.createContract(client, vehicle, vehicle.getBasePrice(),
+                    (PaymentSchedule) scheduleBox.getSelectedItem());
 
-            File path = repository.saveContract(contract);
-            File txtPath = new File(path.getParentFile(), contract.getContractNumber() + ".txt");
-            JOptionPane.showMessageDialog(parent,
-                    "Contract saved to " + path.getAbsolutePath() + " and " + txtPath.getAbsolutePath());
-            JOptionPane.showMessageDialog(parent, "Contract saved to " + path.getAbsolutePath());
+            String cov = (String) coverageBox.getSelectedItem();
+            if ("Все".equals(cov) || "Авария".equals(cov)) {
+                contract.addCoverage(new Coverage(CoverageType.ACCIDENT, 1.2));
+            }
+            if ("Все".equals(cov) || "Землетрясение".equals(cov)) {
+                contract.addCoverage(new Coverage(CoverageType.EARTHQUAKE, 1.1));
+            }
+            if ("Все".equals(cov) || "Пожар".equals(cov)) {
+                contract.addCoverage(new Coverage(CoverageType.FIRE, 1.15));
+            }
+
+            contractRepository.saveContract(contract);
+            JOptionPane.showMessageDialog(parent, "Contract " + contract.getContractNumber() + " saved");
         } catch (IOException ex) {
-            JOptionPane.showMessageDialog(parent, "Error saving contract: " + ex.getMessage());
+            JOptionPane.showMessageDialog(parent, "Error: " + ex.getMessage());
         }
+    }
+
+    private void openClientsWindow() {
+        JFrame frame = new JFrame("Клиенты");
+        DefaultListModel<Client> model = new DefaultListModel<>();
+        for (Client c : clients) {
+            model.addElement(c);
+        }
+        JList<Client> list = new JList<>(model);
+
+        JButton add = new JButton("Добавить клиента");
+        JButton accident = new JButton("Добавить аварию");
+        JButton delete = new JButton("Удалить клиента");
+
+        add.addActionListener(e -> {
+            String name = JOptionPane.showInputDialog(frame, "Имя клиента:");
+            if (name != null && !name.isEmpty()) {
+                Client c = new Client(UUID.randomUUID().toString(), name, new AccidentHistory(0));
+                clients.add(c);
+                model.addElement(c);
+                clientRepository.saveClients(clients);
+            }
+        });
+        accident.addActionListener(e -> {
+            Client c = list.getSelectedValue();
+            if (c != null) {
+                c.getHistory().addAccident();
+                list.repaint();
+                clientRepository.saveClients(clients);
+            }
+        });
+        delete.addActionListener(e -> {
+            Client c = list.getSelectedValue();
+            if (c != null) {
+                clients.remove(c);
+                model.removeElement(c);
+                clientRepository.saveClients(clients);
+            }
+        });
+
+        JPanel btns = new JPanel();
+        btns.add(add);
+        btns.add(accident);
+        btns.add(delete);
+
+        frame.getContentPane().add(new JScrollPane(list), BorderLayout.CENTER);
+        frame.getContentPane().add(btns, BorderLayout.SOUTH);
+        frame.setSize(300, 300);
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
+    }
+
+    private void openPaymentWindow() {
+        String number = JOptionPane.showInputDialog(null, "Номер контракта:");
+        if (number == null || number.isEmpty()) {
+            return;
+        }
+        InsuranceContract c = contractRepository.findContract(number);
+        if (c == null) {
+            JOptionPane.showMessageDialog(null, "Контракт не найден");
+            return;
+        }
+        String amtStr = JOptionPane.showInputDialog(null, "Сумма платежа:");
+        if (amtStr == null || amtStr.isEmpty()) {
+            return;
+        }
+        try {
+            double amt = Double.parseDouble(amtStr);
+            Employee emp = new Employee("1", "Agent");
+            emp.recordPayment(c, amt);
+            contractRepository.saveContract(c);
+            JOptionPane.showMessageDialog(null, "Платеж сохранен");
+        } catch (NumberFormatException | IOException ex) {
+            JOptionPane.showMessageDialog(null, "Ошибка: " + ex.getMessage());
+        }
+    }
+
+    private void openContractsWindow() {
+        JFrame frame = new JFrame("Контракты");
+        DefaultListModel<InsuranceContract> model = new DefaultListModel<>();
+        for (InsuranceContract c : contractRepository.loadContracts()) {
+            model.addElement(c);
+        }
+        JList<InsuranceContract> list = new JList<>(model);
+        frame.getContentPane().add(new JScrollPane(list));
+        frame.setSize(400, 300);
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
     }
 
     private void loadSampleVehicles() {
@@ -97,16 +234,12 @@ public class App {
                 45000, new Engine(EngineType.DIESEL, "Euro6"), 250, VehicleType.CAR));
         vehicles.add(new Vehicle("VIN4", "Classic", "Carriage", currentYear,
                 2000, new Engine(EngineType.PETROL, "Euro4"), 50, VehicleType.CARRIAGE));
-
-        for (Vehicle v : vehicles) {
-            modelBox.addItem(v);
-        }
     }
 
-    private void updateVehicleInfo() {
-        Vehicle v = (Vehicle) modelBox.getSelectedItem();
+    private void updateVehicleInfo(JComboBox<Vehicle> box, JTextArea area) {
+        Vehicle v = (Vehicle) box.getSelectedItem();
         if (v == null) {
-            infoArea.setText("");
+            area.setText("");
             return;
         }
         StringBuilder sb = new StringBuilder();
@@ -114,23 +247,6 @@ public class App {
         sb.append("HP: ").append(v.getHorsepower()).append('\n');
         sb.append("Risk index: ").append(String.format("%.2f", v.getRiskIndex())).append('\n');
         sb.append("Pollution index: ").append(String.format("%.2f", v.getPollutionIndex()));
-        infoArea.setText(sb.toString());
-    }
-
-    // Sample method for demo purposes
-    private void performSampleContract(JFrame parent) {
-        Employee emp = new Employee("1", "John");
-        AccidentHistory history = new AccidentHistory(0);
-        Client client = new Client("100", "Client A", history);
-        Engine engine = new Engine(EngineType.PETROL, "Euro6");
-        Vehicle vehicle = new Vehicle("VIN123", "Make", "Model", 2020, 10000,
-                engine, 150, VehicleType.CAR);
-        InsuranceContract contract = emp.createContract(client, vehicle, 12000, PaymentSchedule.ANNUAL);
-        try {
-            File path = repository.saveContract(contract);
-            JOptionPane.showMessageDialog(parent, "Sample contract saved to " + path.getAbsolutePath());
-        } catch (IOException ex) {
-            JOptionPane.showMessageDialog(parent, "Error saving sample contract: " + ex.getMessage());
-        }
+        area.setText(sb.toString());
     }
 }

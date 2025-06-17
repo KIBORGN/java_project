@@ -1,0 +1,8 @@
+Contract Number: a9035b33-be85-4fc8-8829-43af4ee151ca
+Date Issued: 2025-06-17
+Payment Schedule: SEMIANNUAL
+Client: Barbos
+Vehicle: BMW X5
+Insured Sum: 45000.0
+Discount: 0.0
+Coverage: ACCIDENT factor=1.2

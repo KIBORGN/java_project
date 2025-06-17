@@ -14,6 +14,10 @@ public class AccidentHistory implements Serializable {
         return accidentsLast5Years;
     }
 
+    public void addAccident() {
+        accidentsLast5Years++;
+    }
+
     public double getRiskFactor() {
         if (accidentsLast5Years <= 0) {
             return 1.0;
