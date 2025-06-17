@@ -3,8 +3,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
-import java.awt.event.*;
-
 
 import AccidentHistory.AccidentHistory;
 import Client.Client;
@@ -25,9 +23,6 @@ public class App {
     private JComboBox<PaymentSchedule> scheduleBox = new JComboBox<>(PaymentSchedule.values());
     private ContractRepository repository = new ContractRepository("carInsurance/data/contracts");
 
-import Vehicle.Vehicle;
-
-public class App {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new App().createAndShowGUI());
     }
@@ -36,6 +31,7 @@ public class App {
         JFrame frame = new JFrame("E-Asigurari masini");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         JPanel panel = new JPanel(new GridLayout(0, 2));
+
         panel.add(new JLabel("Client name:"));
         panel.add(clientNameField);
         panel.add(new JLabel("Make:"));
@@ -50,26 +46,13 @@ public class App {
         panel.add(scheduleBox);
 
         JButton createButton = new JButton("Create Contract");
-        createButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                handleCreateContract(frame);
-            }
-        });
+        createButton.addActionListener(e -> handleCreateContract(frame));
 
         frame.getContentPane().add(panel, BorderLayout.CENTER);
         frame.getContentPane().add(createButton, BorderLayout.SOUTH);
-        JButton button = new JButton("Create Contract");
 
-        // anonymous inner class for event handling
-        button.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                performSampleContract();
-                JOptionPane.showMessageDialog(frame, "Contract created (demo)");
-            }
-        });
-
-        frame.getContentPane().add(button);
         frame.pack();
+        frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }
 
@@ -80,10 +63,20 @@ public class App {
             Client client = new Client("100", clientNameField.getText(), history);
             Engine engine = new Engine((EngineType) engineBox.getSelectedItem(), "Euro6");
             int year = Integer.parseInt(yearField.getText());
-            Vehicle vehicle = new Vehicle("VIN" + System.currentTimeMillis(),
-                    makeField.getText(), modelField.getText(), year, 10000, engine);
-            InsuranceContract contract = emp.createContract(client, vehicle, vehicle.getBasePrice(),
-                    (PaymentSchedule) scheduleBox.getSelectedItem());
+            Vehicle vehicle = new Vehicle(
+                    "VIN" + System.currentTimeMillis(),
+                    makeField.getText(),
+                    modelField.getText(),
+                    year,
+                    10000,
+                    engine
+            );
+            InsuranceContract contract = emp.createContract(
+                    client,
+                    vehicle,
+                    vehicle.getBasePrice(),
+                    (PaymentSchedule) scheduleBox.getSelectedItem()
+            );
 
             File path = repository.saveContract(contract);
             JOptionPane.showMessageDialog(parent, "Contract saved to " + path.getAbsolutePath());
@@ -92,12 +85,21 @@ public class App {
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(parent, "Error saving contract: " + ex.getMessage());
         }
-    private void performSampleContract() {
+    }
+
+    // Sample method for demo purposes
+    private void performSampleContract(JFrame parent) {
         Employee emp = new Employee("1", "John");
         AccidentHistory history = new AccidentHistory(0);
         Client client = new Client("100", "Client A", history);
         Engine engine = new Engine(EngineType.PETROL, "Euro6");
         Vehicle vehicle = new Vehicle("VIN123", "Make", "Model", 2020, 10000, engine);
-        emp.createContract(client, vehicle, 12000, PaymentSchedule.ANNUAL);
+        InsuranceContract contract = emp.createContract(client, vehicle, 12000, PaymentSchedule.ANNUAL);
+        try {
+            File path = repository.saveContract(contract);
+            JOptionPane.showMessageDialog(parent, "Sample contract saved to " + path.getAbsolutePath());
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(parent, "Error saving sample contract: " + ex.getMessage());
+        }
     }
 }
