@@ -30,7 +30,7 @@ public class InsuranceContract implements Serializable {
     private List<Payment> payments = new ArrayList<>();
 
     public InsuranceContract(Client client, Vehicle vehicle, double insuredSum, PaymentSchedule schedule) {
-        this.contractNumber = UUID.randomUUID().toString();
+        this.contractNumber = UUID.randomUUID().toString().substring(0, 8);
         this.dateIssued = LocalDate.now();
         this.client = client;
         this.vehicle = vehicle;
@@ -48,6 +48,14 @@ public class InsuranceContract implements Serializable {
 
     public Vehicle getVehicle() {
         return vehicle;
+    }
+
+    public double getInsuredSum() {
+        return insuredSum;
+    }
+
+    public double getDiscount() {
+        return discount;
     }
 
     public void setVehicle(Vehicle vehicle) {
@@ -99,6 +107,9 @@ public class InsuranceContract implements Serializable {
 
     @Override
     public String toString() {
-        return contractNumber + " - " + client.getName() + " (" + vehicle + ")";
+        return contractNumber + " - " + client.getName() +
+                " | Price: " + insuredSum +
+                " | Discount: " + discount +
+                " | Premium: " + String.format("%.2f", calculatePremium());
     }
 }

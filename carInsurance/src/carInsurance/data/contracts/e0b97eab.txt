@@ -1,0 +1,10 @@
+Contract Number: e0b97eab
+Date Issued: 2025-06-17
+Payment Schedule: MONTHLY
+Client: Samogon
+Vehicle: Classic Carriage
+Insured Sum: 2000.0
+Discount: 0.0
+Coverage: ACCIDENT factor=1.2
+Coverage: EARTHQUAKE factor=1.1
+Coverage: FIRE factor=1.15

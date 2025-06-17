@@ -26,5 +26,11 @@ public class Client implements Serializable {
 
     public AccidentHistory getHistory() {
         return accidentHistory;
+ 
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 }

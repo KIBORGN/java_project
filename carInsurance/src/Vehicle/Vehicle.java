@@ -61,7 +61,6 @@ public class Vehicle implements Serializable {
     public VehicleType getType() {
         return type;
     }
-
     public double getRiskIndex() {
         double index = 1.0;
         if (horsepower > 150) {
@@ -70,15 +69,17 @@ public class Vehicle implements Serializable {
             index += 0.1;
         }
 
-        switch (type) {
-            case MOTORCYCLE:
-                index += 0.5;
-                break;
-            case CARRIAGE:
-                index += 0.7;
-                break;
-            default:
-                break;
+        if (type != null) {
+            switch (type) {
+                case MOTORCYCLE:
+                    index += 0.5;
+                    break;
+                case CARRIAGE:
+                    index += 0.7;
+                    break;
+                default:
+                    break;
+            }
         }
         return index;
     }

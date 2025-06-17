@@ -46,10 +46,10 @@ public class App {
         titleLabel.setBorder(new EmptyBorder(10, 0, 20, 0));
 
         // Buttons with extra spacing
-        JButton newContract = new JButton("Новый контракт");
-        JButton clientsBtn = new JButton("Клиенты");
-        JButton paymentBtn = new JButton("Оплата");
-        JButton contractsBtn = new JButton("Контракты");
+        JButton newContract = new JButton("New Contract");
+        JButton clientsBtn = new JButton("Clients");
+        JButton paymentBtn = new JButton("Payment");
+        JButton contractsBtn = new JButton("Contracts");
 
         newContract.addActionListener(e -> openNewContractWindow());
         clientsBtn.addActionListener(e -> openClientsWindow());
@@ -72,7 +72,7 @@ public class App {
     }
 
     private void openNewContractWindow() {
-        JFrame frame = new JFrame("Новый контракт");
+        JFrame frame = new JFrame("New Contract");
         JPanel panel = new JPanel(new GridLayout(0, 2));
 
         JComboBox<Client> clientBox = new JComboBox<>(clients.toArray(new Client[0]));
@@ -80,22 +80,23 @@ public class App {
         JTextArea infoArea = new JTextArea(5, 20);
         infoArea.setEditable(false);
         JComboBox<PaymentSchedule> scheduleBox = new JComboBox<>(PaymentSchedule.values());
-        JComboBox<String> coverageBox = new JComboBox<>(new String[]{"Все", "Авария", "Землетрясение", "Пожар"});
+        JComboBox<String> coverageBox = new JComboBox<>(new String[]{"All", "Accident", "Earthquake", "Fire"});
 
         modelBox.addActionListener(e -> updateVehicleInfo(modelBox, infoArea));
 
-        panel.add(new JLabel("Клиент:"));
+        panel.add(new JLabel("Client:"));
         panel.add(clientBox);
-        panel.add(new JLabel("Модель:"));
+        panel.add(new JLabel("Model:"));
         panel.add(modelBox);
-        panel.add(new JLabel("Инфо:"));
+        panel.add(new JLabel("Info:"));
         panel.add(new JScrollPane(infoArea));
-        panel.add(new JLabel("График оплаты:"));
+        panel.add(new JLabel("Payment schedule:"));
         panel.add(scheduleBox);
-        panel.add(new JLabel("Покрытие:"));
+        panel.add(new JLabel("Coverage:"));
         panel.add(coverageBox);
 
-        JButton createBtn = new JButton("Создать");
+
+        JButton createBtn = new JButton("Create");
         createBtn.addActionListener(e -> handleCreateContract(frame, clientBox, modelBox, scheduleBox, coverageBox));
 
         frame.getContentPane().add(panel, BorderLayout.CENTER);
@@ -111,7 +112,7 @@ public class App {
             Vehicle vehicle = (Vehicle) modelBox.getSelectedItem();
             Client client = (Client) clientBox.getSelectedItem();
             if (vehicle == null || client == null) {
-                JOptionPane.showMessageDialog(parent, "Данные не выбраны");
+                JOptionPane.showMessageDialog(parent, "Data not selected");
                 return;
             }
             Employee emp = new Employee("1", "Agent");
@@ -119,13 +120,13 @@ public class App {
                     (PaymentSchedule) scheduleBox.getSelectedItem());
 
             String cov = (String) coverageBox.getSelectedItem();
-            if ("Все".equals(cov) || "Авария".equals(cov)) {
+            if ("All".equals(cov) || "Accident".equals(cov)) {
                 contract.addCoverage(new Coverage(CoverageType.ACCIDENT, 1.2));
             }
-            if ("Все".equals(cov) || "Землетрясение".equals(cov)) {
+            if ("All".equals(cov) || "Earthquake".equals(cov)) {
                 contract.addCoverage(new Coverage(CoverageType.EARTHQUAKE, 1.1));
             }
-            if ("Все".equals(cov) || "Пожар".equals(cov)) {
+            if ("All".equals(cov) || "Fire".equals(cov)) {
                 contract.addCoverage(new Coverage(CoverageType.FIRE, 1.15));
             }
 
@@ -137,19 +138,19 @@ public class App {
     }
 
     private void openClientsWindow() {
-        JFrame frame = new JFrame("Клиенты");
+        JFrame frame = new JFrame("Clients");
         DefaultListModel<Client> model = new DefaultListModel<>();
         for (Client c : clients) {
             model.addElement(c);
         }
         JList<Client> list = new JList<>(model);
 
-        JButton add = new JButton("Добавить клиента");
-        JButton accident = new JButton("Добавить аварию");
-        JButton delete = new JButton("Удалить клиента");
+        JButton add = new JButton("Add Client");
+        JButton accident = new JButton("Add Accident");
+        JButton delete = new JButton("Delete Client");
 
         add.addActionListener(e -> {
-            String name = JOptionPane.showInputDialog(frame, "Имя клиента:");
+            String name = JOptionPane.showInputDialog(frame, "Client name:");
             if (name != null && !name.isEmpty()) {
                 Client c = new Client(UUID.randomUUID().toString(), name, new AccidentHistory(0));
                 clients.add(c);
@@ -187,16 +188,16 @@ public class App {
     }
 
     private void openPaymentWindow() {
-        String number = JOptionPane.showInputDialog(null, "Номер контракта:");
+        String number = JOptionPane.showInputDialog(null, "Contract number:");
         if (number == null || number.isEmpty()) {
             return;
         }
         InsuranceContract c = contractRepository.findContract(number);
         if (c == null) {
-            JOptionPane.showMessageDialog(null, "Контракт не найден");
+            JOptionPane.showMessageDialog(null, "Contract not found");
             return;
         }
-        String amtStr = JOptionPane.showInputDialog(null, "Сумма платежа:");
+        String amtStr = JOptionPane.showInputDialog(null, "Payment amount:");
         if (amtStr == null || amtStr.isEmpty()) {
             return;
         }
@@ -205,14 +206,14 @@ public class App {
             Employee emp = new Employee("1", "Agent");
             emp.recordPayment(c, amt);
             contractRepository.saveContract(c);
-            JOptionPane.showMessageDialog(null, "Платеж сохранен");
+            JOptionPane.showMessageDialog(null, "Payment saved");
         } catch (NumberFormatException | IOException ex) {
-            JOptionPane.showMessageDialog(null, "Ошибка: " + ex.getMessage());
+            JOptionPane.showMessageDialog(null, "Error: " + ex.getMessage());
         }
     }
 
     private void openContractsWindow() {
-        JFrame frame = new JFrame("Контракты");
+        JFrame frame = new JFrame("Contracts");
         DefaultListModel<InsuranceContract> model = new DefaultListModel<>();
         for (InsuranceContract c : contractRepository.loadContracts()) {
             model.addElement(c);
