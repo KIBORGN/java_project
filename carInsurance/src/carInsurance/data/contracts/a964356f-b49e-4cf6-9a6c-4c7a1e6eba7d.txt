@@ -1,7 +1,0 @@
-Contract Number: a964356f-b49e-4cf6-9a6c-4c7a1e6eba7d
-Date Issued: 2025-06-17
-Payment Schedule: SEMIANNUAL
-Client: Bebes
-Vehicle: Ford Focus
-Insured Sum: 15000.0
-Discount: 0.0

@@ -1,8 +1,0 @@
-Contract Number: 70db7f60-833c-4392-81a0-40d7ff358d40
-Date Issued: 2025-06-17
-Payment Schedule: ANNUAL
-Client: Samogon
-Vehicle: Classic Carriage
-Insured Sum: 2000.0
-Discount: 0.0
-Coverage: EARTHQUAKE factor=1.1

@@ -1,8 +1,0 @@
-Contract Number: 102ad222-b763-490b-9e0a-bdf58e478e81
-Date Issued: 2025-06-17
-Payment Schedule: MONTHLY
-Client: Artiom
-Vehicle: Ford Focus
-Insured Sum: 15000.0
-Discount: 0.0
-Payment: 2025-06-17 amount=15000.0
