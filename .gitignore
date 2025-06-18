@@ -1,1 +1,8 @@
 carInsurance/bin/
+*.class
+*.ser
+
+bin/
+build/
+out/
+target/
