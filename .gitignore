@@ -1,7 +1,8 @@
 carInsurance/bin/
 *.class
 *.ser
-
+*.docx
+*.zip
 bin/
 build/
 out/
