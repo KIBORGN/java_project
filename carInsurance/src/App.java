@@ -144,6 +144,27 @@ public class App {
             model.addElement(c);
         }
         JList<Client> list = new JList<>(model);
+        list.setCellRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (value instanceof Client) {
+                    Client client = (Client) value;
+                    label.setText(client.getName() + " (" + client.getHistory().getAccidentsLast5Years() + " accidents)");
+                }
+                return label;
+            }
+        });
+
+        JLabel accidentInfo = new JLabel("Accidents last 5 years: ");
+        list.addListSelectionListener(e -> {
+            Client selected = list.getSelectedValue();
+            if (selected != null) {
+                accidentInfo.setText("Accidents last 5 years: " + selected.getHistory().getAccidentsLast5Years());
+            } else {
+                accidentInfo.setText("Accidents last 5 years: ");
+            }
+        });
 
         JButton add = new JButton("Add Client");
         JButton accident = new JButton("Add Accident");
@@ -163,6 +184,7 @@ public class App {
             if (c != null) {
                 c.getHistory().addAccident();
                 list.repaint();
+                accidentInfo.setText("Accidents last 5 years: " + c.getHistory().getAccidentsLast5Years());
                 clientRepository.saveClients(clients);
             }
         });
@@ -179,7 +201,8 @@ public class App {
         btns.add(add);
         btns.add(accident);
         btns.add(delete);
-
+        
+        frame.getContentPane().add(accidentInfo, BorderLayout.NORTH);
         frame.getContentPane().add(new JScrollPane(list), BorderLayout.CENTER);
         frame.getContentPane().add(btns, BorderLayout.SOUTH);
         frame.setSize(300, 300);
