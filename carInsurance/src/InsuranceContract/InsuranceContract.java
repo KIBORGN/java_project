@@ -36,6 +36,16 @@ public class InsuranceContract implements Serializable {
         this.vehicle = vehicle;
         this.insuredSum = insuredSum;
         this.paymentSchedule = schedule;
+        switch (schedule) {
+            case SEMIANNUAL:
+                this.discount = 0.05;
+                break;
+            case ANNUAL:
+                this.discount = 0.10;
+                break;
+            default:
+                this.discount = 0.0;
+        }
     }
 
     public String getContractNumber() {
@@ -81,6 +91,10 @@ public class InsuranceContract implements Serializable {
         return base;
     }
 
+    public double calculateFinalPrice() {
+        return calculatePremium() * (1 - discount);
+    }
+
     public void saveToFile(String path) throws IOException {
         try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(path))) {
             out.writeObject(this);
@@ -95,7 +109,8 @@ public class InsuranceContract implements Serializable {
             out.println("Client: " + client.getName());
             out.println("Vehicle: " + vehicle.toString());
             out.println("Insured Sum: " + insuredSum);
-            out.println("Discount: " + discount);
+            out.println("Discount: " + (int)(discount * 100) + "%");
+            out.println("Final Price: " + String.format("%.2f", calculateFinalPrice()));
             for (Coverage c : coverages) {
                 out.println("Coverage: " + c.getType() + " factor=" + c.getRiskFactor());
             }
@@ -109,7 +124,7 @@ public class InsuranceContract implements Serializable {
     public String toString() {
         return contractNumber + " - " + client.getName() +
                 " | Price: " + insuredSum +
-                " | Discount: " + discount +
-                " | Premium: " + String.format("%.2f", calculatePremium());
+                " | Discount: " + (int)(discount * 100) + "%" +
+                " | Final Price: " + String.format("%.2f", calculateFinalPrice());
     }
 }

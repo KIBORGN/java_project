@@ -3,6 +3,7 @@ carInsurance/bin/
 *.ser
 *.docx
 *.zip
+*.txt
 bin/
 build/
 out/
