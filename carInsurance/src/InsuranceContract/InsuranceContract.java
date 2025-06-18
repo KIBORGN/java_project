@@ -26,6 +26,7 @@ public class InsuranceContract implements Serializable {
     private Vehicle vehicle;
     private double insuredSum;
     private double discount;
+    private boolean expired;
     private List<Coverage> coverages = new ArrayList<>();
     private List<Payment> payments = new ArrayList<>();
 
@@ -36,6 +37,7 @@ public class InsuranceContract implements Serializable {
         this.vehicle = vehicle;
         this.insuredSum = insuredSum;
         this.paymentSchedule = schedule;
+        this.expired = false;
         switch (schedule) {
             case SEMIANNUAL:
                 this.discount = 0.05;
@@ -47,6 +49,15 @@ public class InsuranceContract implements Serializable {
                 this.discount = 0.0;
         }
     }
+
+    public boolean isExpired() {
+        return expired;
+    }
+
+    public void setExpired(boolean expired) {
+        this.expired = expired;
+    }
+
 
     public String getContractNumber() {
         return contractNumber;
@@ -110,6 +121,10 @@ public class InsuranceContract implements Serializable {
             out.println("Vehicle: " + vehicle.toString());
             out.println("Insured Sum: " + insuredSum);
             out.println("Discount: " + (int)(discount * 100) + "%");
+            out.println("Expired: " + expired);
+            for (Payment p : payments) {
+                out.println("Paid Amount: " + p.getAmount());
+            }
             out.println("Final Price: " + String.format("%.2f", calculateFinalPrice()));
             for (Coverage c : coverages) {
                 out.println("Coverage: " + c.getType() + " factor=" + c.getRiskFactor());
@@ -122,9 +137,16 @@ public class InsuranceContract implements Serializable {
 
     @Override
     public String toString() {
+        double totalPaid = payments.stream()
+                .mapToDouble(Payment::getAmount)
+                .sum();
+
         return contractNumber + " - " + client.getName() +
                 " | Price: " + insuredSum +
-                " | Discount: " + (int)(discount * 100) + "%" +
-                " | Final Price: " + String.format("%.2f", calculateFinalPrice());
+                " | Discount: " + (int) (discount * 100) + "%" +
+                " | Final Price: " + String.format("%.2f", calculateFinalPrice()) +
+                " | Expired: " + expired +
+                " | Paid: " + String.format("%.2f", totalPaid);
     }
+
 }

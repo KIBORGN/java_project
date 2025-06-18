@@ -131,6 +131,11 @@ public class App {
                 return;
             }
             Employee emp = new Employee("1", "Agent");
+            InsuranceContract existing = contractRepository.findActiveContractByClient(client.getClientId());
+            if (existing != null) {
+                existing.setExpired(true);
+                contractRepository.saveContract(existing);
+            }
             InsuranceContract contract = emp.createContract(client, vehicle, vehicle.getBasePrice(),
                     (PaymentSchedule) scheduleBox.getSelectedItem());
 

@@ -49,4 +49,13 @@ public class ContractRepository {
         }
         return null;
     }
+
+    public InsuranceContract findActiveContractByClient(String clientId) {
+        for (InsuranceContract c : loadContracts()) {
+            if (!c.isExpired() && c.getClient().getClientId().equals(clientId)) {
+                return c;
+            }
+        }
+        return null;
+    }
 }
